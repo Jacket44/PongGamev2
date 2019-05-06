@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -17,18 +19,21 @@ class GameView(context: Context, attributeSet: AttributeSet)
     : SurfaceView(context, attributeSet), SurfaceHolder.Callback {
 
     private val thread : GameThread
-    private var  sharedPreferences : SharedPreferences = context.getSharedPreferences("points", Context.MODE_PRIVATE)
+    private val sharedPreferences : SharedPreferences = context.getSharedPreferences("points", Context.MODE_PRIVATE)
 
     private var ball = Ball(0f, 0f)
     private var leftPaddle = Paddle(0f, 0f, 0f)
     private var rightPaddle = Paddle(0f, 0f, 0f)
-    private var rScore = 0
-    private var lScore = 0
+    private var bestScore = sharedPreferences.getInt("bestScore", 0)
+    private var score = 0
+
 
     init {
         holder.addCallback(this)
         thread = GameThread(holder, this)
     }
+
+
 
     override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
     }
@@ -50,6 +55,8 @@ class GameView(context: Context, attributeSet: AttributeSet)
 
         rightPaddle.x = width - rightPaddle.getWidth()
 
+        Log.i("test","${bestScore}")
+
     }
 
     fun reset(){
@@ -66,25 +73,23 @@ class GameView(context: Context, attributeSet: AttributeSet)
         if (ball.x >= rightPaddle.x - rightPaddle.getWidth() && ball.y <= rightPaddle.y + rightPaddle.height && ball.y >= rightPaddle.y){
             ball.bounceSide()
             ball.speedUp()
+            score++
         }
         if (ball.x <= leftPaddle.x + leftPaddle.getWidth() && ball.y <= leftPaddle.y + leftPaddle.height && ball.y >= leftPaddle.y){
             ball.bounceSide()
             ball.speedUp()
+            score++
         }
-        if(ball.x <= 0f){
+        if(ball.x <= 0f || ball.x >= width) {
             reset()
-            rScore++
-            sharedPreferences.edit().putInt("RightScore", rScore).apply()
-            Log.i("test", "lScore: ${sharedPreferences.getInt("LeftScore", 0)}, rScore: ${sharedPreferences.getInt("RightScore", 0)}")
+            if(bestScore < score){
+                bestScore = score
+                sharedPreferences.edit().putInt("bestScore", bestScore)
+            }
+            score = 0
+
         }
 
-        if(ball.x >= width) {
-
-            reset()
-            lScore++
-            sharedPreferences.edit().putInt("LeftScore", lScore).apply()
-            Log.i("test", "lScore: ${sharedPreferences.getInt("LeftScore", 0)}, rScore: ${sharedPreferences.getInt("RightScore", 0)}")
-        }
 
     }
 
@@ -98,6 +103,25 @@ class GameView(context: Context, attributeSet: AttributeSet)
         leftPaddle.draw(canvas)
         rightPaddle.draw(canvas)
         ball.draw(canvas)
+
+        updateScore(canvas)
+
+    }
+
+    private fun updateScore(canvas: Canvas?){
+        canvas?.also { it ->
+            val textPaint = TextPaint()
+            textPaint.color = Color.WHITE
+            textPaint.textSize = 500f
+            textPaint.textAlign = Paint.Align.CENTER
+            val xPos = canvas.width / 2f
+            val yPos = (canvas.height / 2f - (textPaint.descent() + textPaint.ascent()) / 2f)
+            it.drawText("${score}", xPos, yPos, textPaint)
+            textPaint.textSize = 100f
+            it.drawText("BEST: ${bestScore}", xPos, 100f, textPaint)
+
+        }
+
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
