@@ -3,35 +3,41 @@ package com.jkt44.ponggame
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import java.util.*
+import kotlin.math.cos
+import kotlin.math.sin
 
 const val SIZE = 80f
 
 class Ball(var x: Float, var y: Float){
 
-    private var dx = 10f
-    private var dy = 10f
+    private var angle = Random().nextFloat() % (2 * Math.PI.toFloat())
+
+    private var xSpeed = 20f * sin(angle)
+    private var ySpeed = 20f * cos(angle)
 
     fun update() {
-        x+=dx
-        y+=dy
+        x+=xSpeed
+        y+=ySpeed
     }
 
     fun bounceWall(){
-        dy=-dy
+        ySpeed=-ySpeed
     }
 
     fun bounceSide(){
-        dx= -dx
+        xSpeed= -xSpeed
     }
 
     fun speedUp(){
-        dx*=1.25f
-        dy*=1.25f
+        xSpeed*=1.1f
+        ySpeed*=1.1f
     }
 
     fun resetSpeed(){
-        dx = 10f
-        dy = 10f
+        angle = Random().nextFloat() % (2 * Math.PI.toFloat())
+        xSpeed = 20f * sin(angle)
+        ySpeed = 20f * cos(angle)
     }
 
     fun draw(canvas: Canvas) {

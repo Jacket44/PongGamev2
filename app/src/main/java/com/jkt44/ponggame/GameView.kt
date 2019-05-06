@@ -15,11 +15,11 @@ import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.view.*
 
 
-class GameView(context: Context, attributeSet: AttributeSet)
-    : SurfaceView(context, attributeSet), SurfaceHolder.Callback {
+class GameView(context: Context, attributeSet: AttributeSet) : SurfaceView(context, attributeSet),
+    SurfaceHolder.Callback {
 
-    private val thread : GameThread
-    private val sharedPreferences : SharedPreferences = context.getSharedPreferences("points", Context.MODE_PRIVATE)
+    private val thread: GameThread
+    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("points", Context.MODE_PRIVATE)
 
     private var ball = Ball(0f, 0f)
     private var leftPaddle = Paddle(0f, 0f, 0f)
@@ -32,7 +32,6 @@ class GameView(context: Context, attributeSet: AttributeSet)
         holder.addCallback(this)
         thread = GameThread(holder, this)
     }
-
 
 
     override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
@@ -55,11 +54,11 @@ class GameView(context: Context, attributeSet: AttributeSet)
 
         rightPaddle.x = width - rightPaddle.getWidth()
 
-        Log.i("test","${bestScore}")
+        Log.i("test", "${bestScore}")
 
     }
 
-    fun reset(){
+    fun reset() {
         ball.y = height / 2f
         ball.x = width / 2f
         ball.resetSpeed()
@@ -70,21 +69,22 @@ class GameView(context: Context, attributeSet: AttributeSet)
 
         if (ball.y <= 0 || ball.y + SIZE >= height) ball.bounceWall()
 
-        if (ball.x >= rightPaddle.x - rightPaddle.getWidth() && ball.y <= rightPaddle.y + rightPaddle.height && ball.y >= rightPaddle.y){
+        if (ball.x >= rightPaddle.x - rightPaddle.getWidth() && ball.y <= rightPaddle.y + rightPaddle.height && ball.y >= rightPaddle.y) {
             ball.bounceSide()
             ball.speedUp()
             score++
         }
-        if (ball.x <= leftPaddle.x + leftPaddle.getWidth() && ball.y <= leftPaddle.y + leftPaddle.height && ball.y >= leftPaddle.y){
+        if (ball.x <= leftPaddle.x + leftPaddle.getWidth() && ball.y <= leftPaddle.y + leftPaddle.height && ball.y >= leftPaddle.y) {
             ball.bounceSide()
             ball.speedUp()
             score++
         }
-        if(ball.x <= 0f || ball.x >= width) {
+        if (ball.x <= 0f || ball.x >= width) {
             reset()
-            if(bestScore < score){
+
+            if (bestScore < score) {
                 bestScore = score
-                sharedPreferences.edit().putInt("bestScore", bestScore)
+                sharedPreferences.edit().putInt("bestScore", bestScore).apply()
             }
             score = 0
 
@@ -98,17 +98,16 @@ class GameView(context: Context, attributeSet: AttributeSet)
 
         if (canvas == null) return
 
-        canvas.drawColor(Color.argb(255, 0,0,0))
+        canvas.drawColor(Color.argb(255, 0, 0, 0))
 
         leftPaddle.draw(canvas)
         rightPaddle.draw(canvas)
         ball.draw(canvas)
-
         updateScore(canvas)
 
     }
 
-    private fun updateScore(canvas: Canvas?){
+    private fun updateScore(canvas: Canvas?) {
         canvas?.also { it ->
             val textPaint = TextPaint()
             textPaint.color = Color.WHITE
